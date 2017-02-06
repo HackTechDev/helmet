@@ -160,7 +160,7 @@ local function update_hud(player)
 
                 hudmap.info[name] = player:hud_add({
                     hud_elem_type = "text",
-                    name = "Coordonate",
+                    name = "Info",
                     number = 0xFFFFFF,
                     position = { x = 1, y = 1 },
                     offset = {x = -256, y = -256},
@@ -271,9 +271,9 @@ minetest.register_globalstep(function(dtime)
 	end
 end)
 
-minetest.register_chatcommand("hudmap", {
+minetest.register_chatcommand("helmet", {
 	params = "<cmd> [args]",
-	description = "Hudmap",
+	description = "Helmet",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if param == nil or player == nil then
