@@ -1,9 +1,8 @@
 HUDMAP_UPDATE_TIME = 1
 HUDMAP_MARKER_SIZE = {x=15, y=15}
 HUDMAP_PLAYER_MARKERS = true
-HUDMAP_PLAYER_NAMETAGS = true
 HUDMAP_PLAYER_INFOS = true
-HUDMAP_DEFAULT_PREFS = {visible=false, scale=1, players=false, names=false, infos=false}
+HUDMAP_DEFAULT_PREFS = {visible=false, scale=1, players=false, infos=false}
 
 hudmap = {
 	marker = {},
@@ -80,21 +79,6 @@ local function get_map(player)
 	end
 end
 
-local function remove_nametags(player, name, markers)
-	for k, v in pairs(hudmap.player) do
-		if k ~= name then
-			if v.marker[name] and markers == true then
-				player:hud_remove(v.marker[name])
-				v.marker[name] = nil
-			end
-			if v.nametag[name] then
-				player:hud_remove(v.nametag[name])
-				v.nametag[name] = nil
-			end
-		end
-	end
-end
-
 local function remove_hud(player, name)
 	player:hud_remove(hudmap.map[name])
 	player:hud_remove(hudmap.marker[name])
@@ -106,7 +90,6 @@ local function remove_hud(player, name)
     hudmap.edge[name] = nil
     hudmap.info[name] = nil
 
-	remove_nametags(player, name, true)
 end
 
 local function update_hud(player)
@@ -207,31 +190,10 @@ local function update_hud(player)
 							alignment = {x=-1,y=1},
 						})
 					end
-					if HUDMAP_PLAYER_NAMETAGS == true and
-							hudmap.pref[name].names == true then
-						pos.x = pos.x + HUDMAP_MARKER_SIZE.x
-						pos.y = pos.y - HUDMAP_MARKER_SIZE.y
-						if v.nametag[name] then
-							player:hud_change(v.nametag[name], "offset", pos)
-						else
-							v.nametag[name] = player:hud_add({
-								hud_elem_type = "text",
-								position = {x=1,y=0},
-								text = k,
-								offset = pos,
-								alignment = {x=-1,y=1},
-								number = 0xFFFFFF,
-							})
-						end
-					end
 				else
 					if v.marker[name] then
 						player:hud_remove(v.marker[name])
 						v.marker[name] = nil
-					end
-					if v.nametag[name] then
-						player:hud_remove(v.nametag[name])
-						v.nametag[name] = nil
 					end
 				end
 			end
@@ -242,7 +204,7 @@ end
 minetest.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 	hudmap.pref[name] = HUDMAP_DEFAULT_PREFS
-	hudmap.player[name] = {nametag={}, marker={}, info={}, pos={x=0, z=0}}
+	hudmap.player[name] = {marker={}, info={}, pos={x=0, z=0}}
 	minetest.after(1, function(player)
 		if player then
 			update_hud(player)
@@ -252,7 +214,6 @@ end)
 
 minetest.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
-	remove_nametags(player, name, true)
 	hudmap.player[name] = nil
 end)
 
@@ -287,37 +248,14 @@ minetest.register_chatcommand("helmet", {
 		elseif cmd == "off" then
 			hudmap.pref[name].visible = false
 			remove_hud(player, name)
-		elseif cmd == "scale" then
-			if args then
-				scale = tonumber(args)
-				if scale then
-					if scale > 0 then
-						hudmap.pref[name].scale = scale
-						remove_hud(player, name)
-						update_hud(player)
-						return
-					end
-				end
-			end
-			minetest.chat_send_player(name, "Invalid scale!")
 		elseif cmd == "players" then
 			if args == "on" then
 				hudmap.pref[name].players = true
 			elseif args == "off" then
 				hudmap.pref[name].players = false
 				hudmap.pref[name].names = false
-				remove_nametags(player, name, true)
 			end
 			update_hud(player)
-		elseif cmd == "names" then
-			if args == "on" then
-				hudmap.pref[name].names = true
-				hudmap.pref[name].players = true
-				update_hud(player)
-			elseif args == "off" then
-				hudmap.pref[name].names = false
-				remove_nametags(player, name, false)
-			end
 		end
 	end,
 })
