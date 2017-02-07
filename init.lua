@@ -9,6 +9,7 @@ hudmap = {
 	map = {},
     edge = {},
     info = {},
+    coord = {},
 	pref = {},
 	player = {},
 	registered_maps = {},
@@ -62,8 +63,8 @@ local function get_marker_pos(pos, map, name)
 	x = map.size.x - x / map.scale.x - marker_offset.x
 	y = map.size.y - y / map.scale.y - marker_offset.y
 	return {
-		x = -x * hudmap.pref[name].scale,
-		y = y * hudmap.pref[name].scale,
+		x = -x,
+		y = y,
 	}
 end
 
@@ -85,10 +86,17 @@ local function remove_hud(player, name)
 	player:hud_remove(hudmap.info[name])
     player:hud_remove(hudmap.edge[name])
 
+    local i=0
+    for i=0,99,1 do
+        player:hud_remove(hudmap.coord[name][i])
+    end
+
 	hudmap.map[name] = nil
 	hudmap.marker[name] = nil
     hudmap.edge[name] = nil
     hudmap.info[name] = nil
+    hudmap.edge[name] = nil
+    hudmap.coord[name] = nil
 
 end
 
@@ -97,13 +105,12 @@ local function update_hud(player)
     local playerpos = vector.round(player:getpos())
     local timeofday = tostring(math.floor(minetest.get_timeofday() * 24000))
 
-
-
 	if hudmap.pref[name].visible == false then
 		return
 	end
+
 	local map = get_map(player)
-	local scale = hudmap.pref[name].scale
+	local scale = 1
 	if map then
 		local pos = get_marker_pos(hudmap.player[name].pos, map, name)
         local timeofday = tostring(math.floor(minetest.get_timeofday() * 24000))
@@ -161,7 +168,27 @@ local function update_hud(player)
 					text = "blackedge.png",
 				})
 
-    
+                
+                hudmap.coord[name] = {}
+                local i = 0
+                for coordstepx=0,288,32 do
+                    for coordstepy=0,288,32 do
+                        hudmap.coord[name][i] = player:hud_add({
+                            hud_elem_type = "text",
+                            name = "Coord",
+                            number = 0xFFFFFF,
+                            position = { x = 1, y = 1 },
+                            offset = {x = -312 + coordstepx, y = -596 + coordstepy},
+                            direction = 0,
+                            text = tostring(i),
+                            scale = {x = 200, y = 60 },
+                            alignment = { x = 1, y = 1 },
+                        })
+                       i=i+1     
+                    end
+                end
+
+	   
 
 
 			end
@@ -253,7 +280,6 @@ minetest.register_chatcommand("helmet", {
 				hudmap.pref[name].players = true
 			elseif args == "off" then
 				hudmap.pref[name].players = false
-				hudmap.pref[name].names = false
 			end
 			update_hud(player)
 		end
