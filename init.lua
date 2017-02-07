@@ -180,7 +180,7 @@ local function update_hud(player)
                             position = { x = 1, y = 1 },
                             offset = {x = -312 + coordstepx, y = -596 + coordstepy},
                             direction = 0,
-                            text = tostring(i),
+                            text = tostring(coordstepx/32) .. tostring(coordstepy/32),
                             scale = {x = 200, y = 60 },
                             alignment = { x = 1, y = 1 },
                         })
